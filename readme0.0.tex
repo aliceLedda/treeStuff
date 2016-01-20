@@ -1,0 +1,170 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{makeidx}
+\usepackage{graphicx}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\author{Alice Ledda}
+\title{Readme}
+\begin{document}
+\maketitle
+
+\part*{What you can do so far...}
+\section{Required packages}
+You need to install the R package \verb!ape! and \verb!phangorn!
+
+\verb!library(ape)!
+
+\verb!library(phangorn)!
+
+The files containing the scripts can be found github at the following address
+
+GITHUB ADDRESS
+
+
+
+\section{Simulate genealogies}
+We have successfully implemented the simulation of genealogies.
+We can simulate genealogies with constant population size, with expanding population size and with one constant population with one expanding subpopulation (just one of each).
+
+
+\subsection{Constant population size}
+\paragraph{Required files}:coalNonExp2.R
+\paragraph{Command:}
+\verb!tree<-MakeTreeNon(timesNon=timesNon)!
+
+\paragraph{Input:}
+ \textit{timesNon}, a vector with the times at which the new leaves are to appear. (For an ultrametric tree they have to be all the same time...). In the end there will be as many leaves as the length of the vector 
+
+\paragraph{Examples:}
+
+Example1
+
+\begin{verbatim}
+source("progs/coalNonExp2.R")
+times0<-rep(0,10)+0.3*c(1:10)
+tree<-MakeTreeNon(timesNon=times0)
+plot.phylo(tree)
+\end{verbatim}
+
+Example2: ultrametric tree
+
+\begin{verbatim}
+source("progs/coalNonExp2.R")
+times0<-rep(0,10)
+tree<-MakeTreeNon(timesNon=times0)
+plot.phylo(tree)
+\end{verbatim}
+
+
+\subsection{Expanding population size}
+\paragraph{Required files:} coalExp.R coalNonExp2.R coalBoth.R
+\paragraph{Command:}
+\verb!tree<-MakeTreeExp(alphaExp=alphaExp,timesExp=timesExp)!
+
+\paragraph{Input:} 
+\textit{timesExp} the vector of times at which the new lineages are to appear. To get an ultrametric tree the vector should contain n times the same time. The number of leaves in the tree is the length of the \textit{timesExp} vector.
+
+\textit{alphaExp} a number: the rate at which the population is expanding.
+
+\paragraph{Example}
+
+Example 1:
+
+\begin{verbatim}
+source("progs/coalExp.R")
+timesExp<-rep(0,20)+0.00001*c(1:20)
+alphaExp<-20
+tree<-MakeTreeExp(alphaExp=alphaExp,timesExp=timesExp)
+plot.phylo(tree)
+\end{verbatim}
+
+Example 2: ultrametric tree
+
+\begin{verbatim}
+source("progs/coalExp.R")
+timesExp<-rep(0,20)
+alphaExp<-50
+tree<-MakeTreeExp(alphaExp=alphaExp,timesExp=timesExp)
+plot.phylo(tree)
+\end{verbatim}
+
+
+\subsection{Constant pupulation with expanding subpopulation}
+
+\paragraph{Required files:} coalExp.R
+
+\paragraph{Command:}
+\verb!tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)!
+
+\paragraph{Input:}
+\textit{timesExp} the vector of times at which the new lineages of the expanding subpopulation are to appear. To get an ultrametric tree the vector should contain n times the same time. The number of leaves in this subtree is the length of the \textit{timesExp} vector.
+
+\textit{timesNon}, a vector with the times at which the new leaves of the non expanding subpopulation are to appear. (For an ultrametric tree they have to be all the same time...). In the end there will be as many leaves in the nonexpanding subpopulation as the length of the vector 
+
+
+\textit{alpha} a number: the rate at which the population is expanding.
+
+\textit{Ts} the time at which the two subpopulations separate. For any $t>Ts$ (the zero of time is at the more recent leave) the two subpopulations will be merged and treated as one (any lineage can coalesce with any other).
+
+\textit{Texp} the time at which one of the expanding subpopulations starts to expand. If we set this time to 0 we just have two identical subpopulations that expand at the same rate
+$Texp \leq Ts$.
+
+\paragraph{Example}
+
+Example 1:
+
+\begin{verbatim}
+source("progs/coalNonExp2.R")
+source("progs/coalExp.R")
+source("progs/coalBoth.R")
+timesExp<-c(seq(0.5,0.51,0.001))
+timesNon<-c(seq(0.1,0.2,0.01))
+alpha<-25
+Ts<-2
+Texp<-2
+tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)
+plot.phylo(tree)
+\end{verbatim}
+
+Example 2: ultrametric tree
+
+\begin{verbatim}
+source("progs/coalNonExp2.R")
+source("progs/coalExp.R")
+source("progs/coalBoth.R")
+timesExp<-rep(0,20)
+timesNon<-rep(0,20)
+alphaExp<-50
+Ts<-20
+Texp<-10
+tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)
+plot.phylo(tree)
+\end{verbatim}
+
+Example 3: two subpopulations, none expanding
+
+\begin{verbatim}
+source("progs/coalNonExp2.R")
+source("progs/coalExp.R")
+source("progs/coalBoth.R")
+timesExp<-rep(0,20)
+timesNon<-rep(0,20)
+alphaExp<-50
+Ts<-20
+Texp<-0
+tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)
+plot.phylo(tree)
+\end{verbatim}
+
+
+\section{Compute Likelihood of a genealogy}
+We compute the likelihood of the genealogy using the Likelihood derived in Drummond et al \cite{}
+Will be updated soon...
+
+%\part*{How good we are}
+
+\end{document}
