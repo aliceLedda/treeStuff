@@ -1,0 +1,394 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{makeidx}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\SweaveOpts{prefix.string=EPFL}
+\author{Alice Ledda}
+\title{Readme}
+\begin{document}
+\maketitle
+
+\part*{What you can do so far...}
+\section{Required packages}
+You need to install the R package \verb!ape! and \verb!phangorn!
+
+<<>>=
+library(ape)
+
+library(phangorn)
+@
+
+The files needed to run the whole thing are in the following files. The required file fore each command is specified in the command example.
+
+
+The files containing the scripts can be found github at the following address
+
+GITHUB ADDRESS
+
+
+
+\section{Simulate genealogies}
+We have successfully implemented the simulation of genealogies.
+We can simulate genealogies with constant population size, with expanding population size and with one constant population with one expanding subpopulation (just one of each).
+
+
+\subsection{Constant population size}
+\paragraph{Required files}:
+<<>>=
+source("NonExpFunc1.R")
+@
+\paragraph{Command:}
+<<echo=TRUE,eval=FALSE>>=
+treeNon<-MakeTreeNon(timesNon=timesNon)
+@
+\paragraph{Input:}nonexp
+ \textit{timesNon}, a vector with the times at which the new leaves are to appear. (For an ultrametric tree they have to be all the same time...). In the end there will be as many leaves as the vector length. 
+
+\paragraph{Examples:}
+
+Example1
+
+<<label=tree1,fig=TRUE,include=FALSE>>=
+source("NonExpFunc1.R")
+times0<-rep(0,10)+0.3*c(1:10)
+tree<-MakeTreeNon(timesNon=times0)
+plot.phylo(tree)
+@
+
+Example2: ultrametric tree
+
+<<label=tree2,fig=TRUE,include=FALSE>>=
+source("NonExpFunc1.R")
+times0<-rep(0,10)
+tree<-MakeTreeNon(timesNon=times0)
+plot.phylo(tree)
+@
+
+\begin{figure}
+\begin{subfigure}{0.5\textwidth}
+        \includegraphics[width=1\textwidth]{EPFL-tree1.pdf}
+        \caption{distance between leaves =0.3}\label{tree1}
+    \end{subfigure}
+\begin{subfigure}{0.5\textwidth}
+        \includegraphics[width=1\textwidth]{EPFL-tree2.pdf}
+        \caption{ultrametric tree}\label{tree2}
+    \end{subfigure}
+ \caption{nonexpanding trees}\label{nonexp}
+\end{figure}
+
+
+\subsection{Expanding population size}
+\paragraph{Required files:}
+<<>>=
+source("ExpFunc2.R")
+@
+\paragraph{Command:}
+<<echo=TRUE,eval=FALSE>>=
+tree<-MakeTreeExp(alphaExp=alphaExp,timesExp=timesExp)
+@
+
+\paragraph{Input:} 
+\textit{timesExp} -a vector- of times at whnonexpich the new lineages are to appear. To get an ultrametric tree the vector should contain n times the same time. The number of leaves in the tree is the length of the 
+
+\textit{alphaExp} -a number- the rate at which the population is expanding.
+
+\paragraph{Example}
+
+Example 1:
+
+<<label=tree3,fig=TRUE,include=FALSE>>=
+source("ExpFunc2.R")
+timesExp<-rep(0,20)+0.005*c(1:20)
+alphaExp<-20
+tree<-MakeTreeExp(alphaExp=alphaExp,timesExp=timesExp)
+plot.phylo(tree)
+@
+
+Example 2: ultrametric tree
+
+<<label=tree4,fig=TRUE,include=FALSE>>=
+source("ExpFunc2.R")
+timesExp<-rep(0,20)
+alphaExp<-50
+tree<-MakeTreeExp(alphaExp=alphaExp,timesExp=timesExp)
+plot.phylo(tree)
+@
+
+\begin{figure}
+\begin{subfigure}{0.5\textwidth}
+        \includegraphics[width=1\textwidth]{EPFL-tree3.pdf}
+        \caption{distances between leaves 0.005, expansion rate =20}\label{tree3}
+    \end{subfigure}
+\begin{subfigure}{0.5\textwidth}
+        \includegraphics[width=1\textwidth]{EPFL-tree4.pdf}
+        \caption{ultrametric, expansion rate=50}\label{tree4}
+    \end{subfigure}
+ \caption{expanding trees}\label{nonexp}
+\end{figure}
+
+\subsection{Constant pupulation with expanding subpopulation}
+
+\paragraph{Required files:} 
+<<>>=
+source("coalescentBothFuncNested1.R")
+@
+
+\paragraph{Command:}
+<<echo=TRUE,eval=FALSE>>=
+tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)
+@
+
+\paragraph{Input:}
+\textit{timesExp} -a vector- the vector of times at which the new lineages of the expanding subpopulation are to appear. To get an ultrametric tree the vector should contain n times the same time. The number of leaves in this subtree is the length of the \textit{timesEnonexpxp} vector.
+
+\textit{timesNon}, -a vector- the vector of times at which the new leaves of the non expanding subpopulation are to appear. (For an ultrametric tree they have to be all the same time...). In the end there will be as many leaves in the nonexpanding subpopulation as the length of the vector 
+
+
+\textit{alpha} -a number-: the rate at which the population is expanding.
+
+\textit{Ts} -a number- the time at which the two subpopulations separate. For any $t>Ts$ (the zero of time is at the more recent leave) the two subpopulations will be merged and treated as one (any lineage can coalesce with any other).
+
+\textit{Texp} -a number- the time at which one of the expanding subpopulations starts to expand. If we set this time to 0 we just have two identical subpopulations that expand at the same rate
+$Texp \leq Ts$.
+
+\paragraph{Example}
+Example 1: different leaf times, expansion rate =25
+<<label=tree5,fig=TRUE,include=FALSE>>=
+timesExp<-c(seq(0.5,0.51,0.001))
+timesNon<-c(seq(0.1,0.2,0.01))
+alpha<-25
+Ts<-2
+Texp<-2
+tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)
+plot.phylo(tree)
+h<-max(node.depth.edgelength(tree))
+abline(v=(h-Ts), col=2, lwd=5)
+abline(v=(h-Texp), col=4, lwd=2)
+@
+nonexp
+
+<<label=tree5a,echo=false,fig=TRUE,include=FALSE>>=
+timesExp<-c(seq(0.5,0.51,0.001))
+timesNon<-c(seq(0.1,0.2,0.01))
+alpha<-50
+Ts<-2
+Texp<-2
+tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)
+plot.phylo(tree)
+h<-max(node.depth.edgelength(tree))
+abline(v=(h-Ts), col=2, lwd=5)
+abline(v=(h-Texp), col=4, lwd=2)
+
+@
+
+
+Example 2: ultrametric treenonexp
+
+<<label=tree6,fig=TRUE,include=FALSE>>=
+timesExp<-rep(0,20)
+timesNon<-rep(0,20)
+alphaExp<-50
+Ts<-10
+Texp<-10
+tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)
+plot.phylo(tree)
+h<-max(node.depth.edgelength(tree))
+abline(v=(h-Ts), col=2, lwd=5)
+abline(v=(h-Texp), col=4, lwd=2)
+
+@
+
+Example 3: two subpopulations, none expanding
+
+<<label=tree7,fig=TRUE,include=FALSE>>=
+timesExp<-rep(0,20)
+timesNon<-rep(0,20)
+alphaExp<-1
+Ts<-10
+Texp<-10
+tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)
+plot.phylo(tree)
+h<-max(node.depth.edgelength(tree))
+abline(v=(h-Ts), col=2, lwd=5)
+abline(v=(h-Texp), col=4, lwd=2)
+
+@
+
+\begin{figure}
+\begin{subfigure}{0.5\textwidth}
+        \includegraphics[width=1\textwidth]{EPFL-tree5.pdf}
+        \caption{expansion rate =25}\label{tree5}
+    \end{subfigure}
+\begin{subfigure}{0.5\textwidth}
+        \includegraphics[width=1\textwidth]{EPFL-tree5a.pdf}
+        \caption{expansion rate=50}\label{tree5a}
+    \end{subfigure}
+ \caption{Example1. Same parameters, different expansion trees. The red and blue line represent the Ts and Texp parameters.}\label{ex1}
+\end{figure}
+
+\begin{figure}
+\begin{subfigure}{0.5\textwidth}
+        \includegraphics[width=1\textwidth]{EPFL-tree6.pdf}
+        \caption{expansion rate 50}\label{tree5}
+    \end{subfigure}
+\begin{subfigure}{0.5\textwidth}
+        \includegraphics[width=1\textwidth]{EPFL-tree7.pdf}
+        \caption{no expansion}\label{tree5a}
+    \end{subfigure}
+ \caption{ultrametric trees. The red and blue line do not appear because Ts and Texp are out of the plot range.  }\label{ex23}
+\end{figure}
+
+\subsection{Likelihood}
+
+\section{Log Likelihood}
+\paragraph{Required files:} 
+<<>>=
+source("like0.5Sum.R")
+@
+
+\subsection{Log likelihood of a non expanding tree}
+\paragraph{Command:}
+<<echo=TRUE,eval=FALSE>>=
+Lnon<-LogLikeliHood(NTree, theta)
+@
+
+\paragraph{Input:}
+
+\textit{Ntree} -a tree, phylo object- the tree we want to compute the likelihood of
+
+\textit{theta} -a number- the conversion factor between calendar units and coalescent units. If you are working in coalescent units, set it to 1.
+
+\paragraph{Example:}
+<<>>=
+source("NonExpFunc1.R")
+times0<-rep(0,10)+0.3*c(1:10)
+NTree<-MakeTreeNon(timesNon=times0)
+theta<-1
+Lnon<-LogLikeliHood(NTree, theta)
+@
+
+\subsection{Log likelihood of an expanding tree}
+\paragraph{Command:}
+<<echo=TRUE,eval=FALSE>>=
+Lexp<-LogLikeliHoodExp(ETree,theta,alpha)
+@
+
+\paragraph{Input:}
+
+\textit{Etree} -a tree, phylo object- the tree we want to compute the likelihood of, under the assumption at it is expanding at a given rate
+
+\textit{theta} -a number- the conversion factor between calendar units and coalescent units. If you are working in coalescent units, set it to 1.
+
+\textit{alpha} -a number- the given expansion rate
+
+\paragraph{Example:}
+<<>>=
+timesExp<-rep(0,20)+0.005*c(1:20)
+alphaExp<-20
+ETree<-MakeTreeExp(alphaExp=alphaExp,timesExp=timesExp)
+theta<-1
+Lexp<-LogLikeliHoodExp(ETree,theta,alpha)
+@
+
+\subsection{Log likelihood of a non expanding tree with an expanding tree}
+\paragraph{Required files:} 
+<<>>=
+source("like0.5Sum.R")
+source("MCMCII.2.R")
+@
+
+\paragraph{Command:}
+<<echo=TRUE,eval=FALSE>>=
+best<-LogLikeliHoodBoth(tree, theta, alpha,branch)
+@
+
+\paragraph{Input:}
+
+\textit{tree} -a tree, phylo object- the tree we want to compute the likelihood of, under the assumption that part of it is expanding at a given rate
+
+\textit{theta} -a number- the conversion factor between calendar units and coalescent units. If you are working in coalescent units, set it to 1.
+
+\textit{alpha} -a number- the given expansion rate
+
+\textit{branch} -a number- the branch where the expansion started
+
+\paragraph{Example:}
+<<>>=
+source("like0.5Sum.R")
+source("MCMCII.2.R")
+
+timesExp<-rep(0,20)
+timesNon<-rep(0,20)
+alphaExp<-50
+Ts<-10
+Texp<-10
+tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)
+write.tree(tree, file="tmp.tre")
+tree<-read.tree("tmp.tre")
+
+nodes<-AvailableNodes(tree,4)
+
+Ta<-matrix(nrow=length(nodes),ncol=3)
+colnames(Ta)<-c("branch","likelihood","expRate")
+
+for (i in 1:length(nodes)){
+	branch<-nodes[i]
+	alpha<-20
+	theta<-1
+	best<-LogLikeliHoodBoth(tree, theta, alpha,branch)
+	Ta[i,1]<-branch
+	Ta[i,2]<-best$likelihood
+	Ta[i,3]<-best$rate
+	
+}
+Ta
+
+@
+
+
+
+\subsection{MCMC}
+\paragraph{Required files:} 
+<<>>=
+source("MCMCII.2.R")
+@
+
+\paragraph{Command:}
+<<echo=TRUE,eval=FALSE>>=
+tab<-MCMC(tree,trials,burnon)
+@
+
+\paragraph{Input:}
+
+\textit{tree} -a tree, phylo object- the tree we want to compute the ...., under the assumption that part of it is expanding at a given rate
+
+\textit{trials} -a number- the total numbers of trials 
+
+\textit{burnon} -a number- the number of burnon trials 
+
+
+\paragraph{Example:}
+<<>>=
+timesExp<-rep(0,20)
+timesNon<-rep(0,20)
+alphaExp<-20
+alpha<-20
+Ts<-10
+Texp<-10
+tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)
+write.tree(tree, file="tmp.tre")
+tree<-read.tree("tmp.tre")
+
+trials<-100
+burnon<-3
+tab<-MCMC(tree,trials,burnon)
+@
+
+\end{document}
