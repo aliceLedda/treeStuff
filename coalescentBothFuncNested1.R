@@ -1,11 +1,11 @@
 library(ape)
 #########FUNCTIONS TO GET PROGRAM WORKING
-#source("progs/coalescentExpFunc2.R")
-#source("progs/coalescentNonExpFunc1.R")
+source("coalescentExpFuncB1.R")
+source("coalescentNonExpFuncB1.R")
 
 #########function joinevolved
 
-joinevolved<-function(popExp,popNon){
+joinevolved<-function(popExp,popNon,Ts){
 	if (length(popExp$tips)>=length(popNon$tips)){
 	
 		newlin<-popExp$lineages
@@ -15,7 +15,7 @@ joinevolved<-function(popExp,popNon){
 		ancestralTimes<-numeric(0)
 		}else{
 		ancestralTimes<-c(popNon$times,popExp$times)}  #maybe not so easy
-		ancestralHeight<-max(popNon$height,popExp$height)   #maybe not so easy too
+		ancestralHeight<-max(popNon$height,popExp$height,Ts)   #maybe not so easy too
 		NewExpTips<-popExp$tips+max(popNon$lineages[,1])     #maybe not so easy either
 		ancestralTips<-c(popNon$tips, NewExpTips)
 		ancestralEvo<-0
@@ -28,7 +28,7 @@ joinevolved<-function(popExp,popNon){
 		ancestralTimes<-numeric(0)
 		}else{
 		ancestralTimes<-c(popExp$times,popNon$times)} #maybe not so easy
-		ancestralHeight<-max(popExp$height,popNon$height)   #maybe not so easy too
+		ancestralHeight<-max(popExp$height,popNon$height,Ts)   #maybe not so easy too
 		NewNonTips<-popNon$tips+max(popExp$lineages[,1])     #maybe not so easy either
 		ancestralTips<-c(popExp$tips, NewNonTips)
 		ancestralEvo<-0
@@ -36,6 +36,38 @@ joinevolved<-function(popExp,popNon){
 	
 	return (list(lineages=ancestralLineages,times=ancestralTimes,height=ancestralHeight,tips=ancestralTips,evo=ancestralEvo))
 	}
+
+# joinevolved<-function(popExp,popNon){
+# 	if (length(popExp$tips)>=length(popNon$tips)){
+	
+# 		newlin<-popExp$lineages
+# 		newlin[,1]<-newlin[,1]+max(popNon$lineages) 
+# 		ancestralLineages<-rbind(popNon$lineages,newlin)
+# 		if((identical(popNon$times,numeric(0)))&(identical(popExp$times,numeric(0)))){
+# 		ancestralTimes<-numeric(0)
+# 		}else{
+# 		ancestralTimes<-c(popNon$times,popExp$times)}  #maybe not so easy
+# 		ancestralHeight<-max(popNon$height,popExp$height)   #maybe not so easy too
+# 		NewExpTips<-popExp$tips+max(popNon$lineages[,1])     #maybe not so easy either
+# 		ancestralTips<-c(popNon$tips, NewExpTips)
+# 		ancestralEvo<-0
+# 	}
+# 	else{
+# 		newlin<-popNon$lineages
+# 		newlin[,1]<-newlin[,1]+max(popExp$lineages) 
+# 		ancestralLineages<-rbind(popExp$lineages,newlin)
+# 		if((identical(popNon$times,numeric(0)))&(identical(popExp$times,numeric(0)))){
+# 		ancestralTimes<-numeric(0)
+# 		}else{
+# 		ancestralTimes<-c(popExp$times,popNon$times)} #maybe not so easy
+# 		ancestralHeight<-max(popExp$height,popNon$height)   #maybe not so easy too
+# 		NewNonTips<-popNon$tips+max(popExp$lineages[,1])     #maybe not so easy either
+# 		ancestralTips<-c(popExp$tips, NewNonTips)
+# 		ancestralEvo<-0
+# 	}
+	
+# 	return (list(lineages=ancestralLineages,times=ancestralTimes,height=ancestralHeight,tips=ancestralTips,evo=ancestralEvo))
+# 	}
 
 
 #############function joinevo
@@ -102,7 +134,7 @@ makephyloAll<-function(evoR){
 	#attr(tree,"order")<-"cladewise"
 	tree$edge.length<-evoR[,3]
 	tree$tip.label<-seq(1,length(tips),1)
-	tree$tip.label<-tips
+	tree$tip.label<-tips   #this is the line causing the funny tip names (not consecutive). It can be deleted with no further consequences than the tips getting consecutive numbers names.
 	tree$Nnode<-length(unique(evoNew[,1]))
 	#back<-list(tree=tree,cBR=cBR)
 	return(tree)
@@ -136,137 +168,137 @@ Ts<-10
 ############ 2. the time at which the Exp populations start expanding
 Texp<-3
 
-############# MAIN FUNCTION ###############
+# ############# MAIN FUNCTION ###############
 
-MakeTreeBoth<-function(timesExp,timesNon,alpha,Ts,Texp){
+# MakeTreeBoth<-function(timesExp,timesNon,alpha,Ts,Texp){
 
-######SETTING THE STARTING PARAMETERS
-#lineages is the matrix containing the extant lineages 
-#and the time they appear in the genealogy either by coalescent event or by addition of a lineage
-lineagNon<-matrix(nrow=1,ncol=2,data=0)
-lineagExp<-matrix(nrow=1,ncol=2,data=0)
+# ######SETTING THE STARTING PARAMETERS
+# #lineages is the matrix containing the extant lineages 
+# #and the time they appear in the genealogy either by coalescent event or by addition of a lineage
+# lineagNon<-matrix(nrow=1,ncol=2,data=0)
+# lineagExp<-matrix(nrow=1,ncol=2,data=0)
 
-timesNon<-timesNon-min(timesNon)   #first Leave at 0
-timesExp<-timesExp-min(timesExp)   # first leave at 0
+# timesNon<-timesNon-min(timesNon)   #first Leave at 0
+# timesExp<-timesExp-min(timesExp)   # first leave at 0
 
-lineagNon[1,]<-c(1,timesNon[1]) #it is initialised with one lineage at time 0
-lineagExp[1,]<-c(1,timesExp[1]) #it is initialised with one lineage at time 0
+# lineagNon[1,]<-c(1,timesNon[1]) #it is initialised with one lineage at time 0
+# lineagExp[1,]<-c(1,timesExp[1]) #it is initialised with one lineage at time 0
 
-timesNon<-timesNon[-1]
-timesExp<-timesExp[-1]
-NlNon<-1 # is the numbe of lineages
-NlExp<-1
-tipsNon<-1
-tipsExp<-1
-#total number of lineages in the simulation
-#total<-10
+# timesNon<-timesNon[-1]
+# timesExp<-timesExp[-1]
+# NlNon<-1 # is the numbe of lineages
+# NlExp<-1
+# tipsNon<-1
+# tipsExp<-1
+# #total number of lineages in the simulation
+# #total<-10
 
 
-heightNon<-0
-height<-0
-evoNon<-c(0,0,0)
-evoExp<-c(0,0,0)
+# heightNon<-0
+# height<-0
+# evoNon<-c(0,0,0)
+# evoExp<-c(0,0,0)
 
-######preparing evolution
-evolvedNon<-list(lineages=as.matrix(lineagNon),
-		times=timesNon,
-		height=0,
-		tips=tipsNon,
-		evo=evoNon)
+# ######preparing evolution
+# evolvedNon<-list(lineages=as.matrix(lineagNon),
+# 		times=timesNon,
+# 		height=0,
+# 		tips=tipsNon,
+# 		evo=evoNon)
 
-evolvedExp<-list(lineages=as.matrix(lineagExp),
-		times=timesExp,
-		height=0,
-		tips=tipsExp,
-		evo=evoExp)
+# evolvedExp<-list(lineages=as.matrix(lineagExp),
+# 		times=timesExp,
+# 		height=0,
+# 		tips=tipsExp,
+# 		evo=evoExp)
 
-evolvedA<-list(lineages=as.matrix(lineagExp),
-		times=0,
-		height=0,
-		tips=0,
-		evo=0)
+# evolvedA<-list(lineages=as.matrix(lineagExp),
+# 		times=0,
+# 		height=0,
+# 		tips=0,
+# 		evo=0)
 
-######## evolving!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-control=0
-while((evolvedExp$height<Ts)&(control==0)){
-	while((evolvedExp$height<Texp)&(control==0)){
-		if((length(evolvedExp$lineages[,1])>1)|(length(evolvedExp$times)>0)){
-		 evolvedExp<-evolutionExp(lineagesExp=evolvedExp$lineages,
-					tipsExp=evolvedExp$tips,
-					timesExp=evolvedExp$times,
-					treeHeightExp=evolvedExp$height,
-					alphaExp=alpha)
-			if(is.matrix(evolvedExp$evo)){
-				evoExp<-rbind(evoExp,evolvedExp$evo)
-			}
-		}else{control=1}
-	}
-	if((length(evolvedExp$lineages[,1])>1)|(length(evolvedExp$times)>0)){
-		evolvedExp<-evolutionNon(lineagesNon=evolvedExp$lineages,
-					tipsNon=evolvedExp$tips,
-					timesNon=evolvedExp$times,
-					heightNon=evolvedExp$height)
-		if(is.matrix(evolvedExp$evo)){
-			evoExp<-rbind(evoExp,evolvedExp$evo)
-			}
-		}
-	else{control=1}
-}
+# ######## evolving!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# control=0
+# while((evolvedExp$height<Ts)&(control==0)){
+# 	while((evolvedExp$height<Texp)&(control==0)){
+# 		if((length(evolvedExp$lineages[,1])>1)|(length(evolvedExp$times)>0)){
+# 		 evolvedExp<-evolutionExp(lineagesExp=evolvedExp$lineages,
+# 					tipsExp=evolvedExp$tips,
+# 					timesExp=evolvedExp$times,
+# 					treeHeightExp=evolvedExp$height,
+# 					alphaExp=alpha)
+# 			if(is.matrix(evolvedExp$evo)){
+# 				evoExp<-rbind(evoExp,evolvedExp$evo)
+# 			}
+# 		}else{control=1}
+# 	}
+# 	if((length(evolvedExp$lineages[,1])>1)|(length(evolvedExp$times)>0)){
+# 		evolvedExp<-evolutionNon(lineagesNon=evolvedExp$lineages,
+# 					tipsNon=evolvedExp$tips,
+# 					timesNon=evolvedExp$times,
+# 					heightNon=evolvedExp$height)
+# 		if(is.matrix(evolvedExp$evo)){
+# 			evoExp<-rbind(evoExp,evolvedExp$evo)
+# 			}
+# 		}
+# 	else{control=1}
+# }
 
-#treeExp<-makephylo(evoExp)
+# #treeExp<-makephylo(evoExp)
 
-control=0
-while((evolvedNon$height<Ts)&(control==0)){
-	if((length(evolvedNon$lineages[,1])>1)|(length(evolvedNon$times)>0)){
-	evolvedNon<-evolutionNon(lineagesNon=evolvedNon$lineages,
-				tipsNon=evolvedNon$tips,
-				timesNon=evolvedNon$times,
-				heightNon=evolvedNon$height)
-		if(is.matrix(evolvedNon$evo)){
-			evoNon<-rbind(evoNon,evolvedNon$evo)
-		}
-	}
-	else{control=1}
-}
+# control=0
+# while((evolvedNon$height<Ts)&(control==0)){
+# 	if((length(evolvedNon$lineages[,1])>1)|(length(evolvedNon$times)>0)){
+# 	evolvedNon<-evolutionNon(lineagesNon=evolvedNon$lineages,
+# 				tipsNon=evolvedNon$tips,
+# 				timesNon=evolvedNon$times,
+# 				heightNon=evolvedNon$height)
+# 		if(is.matrix(evolvedNon$evo)){
+# 			evoNon<-rbind(evoNon,evolvedNon$evo)
+# 		}
+# 	}
+# 	else{control=1}
+# }
 
-#treeNon<-makephylo(evoNon)
+# #treeNon<-makephylo(evoNon)
 
-evolvedA<-joinevolved(evolvedExp,evolvedNon)
+# evolvedA<-joinevolved(evolvedExp,evolvedNon,Ts)
 
-evoA<-joinevo(evoExp,evoNon)
+# evoA<-joinevo(evoExp,evoNon)
 
-#while((length(evolved$lineages[,1])+length(evolved$times)>1){	
-  while((length(evolvedA$lineages[,1])>1)|(length(evolvedA$times)>0)){
+# #while((length(evolved$lineages[,1])+length(evolved$times)>1){	
+#   while((length(evolvedA$lineages[,1])>1)|(length(evolvedA$times)>0)){
 		
-	evolvedA<-evolutionNon(lineagesNon=evolvedA$lineages,
-				tipsNon=evolvedA$tips,
-				timesNon=evolvedA$times,
-				heightNon=evolvedA$height)
+# 	evolvedA<-evolutionNon(lineagesNon=evolvedA$lineages,
+# 				tipsNon=evolvedA$tips,
+# 				timesNon=evolvedA$times,
+# 				heightNon=evolvedA$height)
 	
-	if(is.matrix(evolvedA$evo)){
-		evoA<-rbind(evoA,evolvedA$evo)
-	}
-}
+# 	if(is.matrix(evolvedA$evo)){
+# 		evoA<-rbind(evoA,evolvedA$evo)
+# 	}
+# }
 
-tree<-makephyloAll(evoA)
-return(tree)
-}
+# tree<-makephyloAll(evoA)
+# return(tree)
+# }
 
 ######################   example ################
 
-timesExp<-c(seq(0.5,4,0.1))
-####### times at which we sample the leaves in the NON-Exponentially growing pop
-timesNon<-c(seq(0.1,3,0.1))
-####### the rate at which the Exponentially expanding pop is expanding
-alpha=10
-############# 1. the time at which the two populations split
-Ts<-5
-############ 2. the time at which the Exp populations start expanding
-Texp<-3
+# timesExp<-c(seq(0.5,4,0.1))
+# ####### times at which we sample the leaves in the NON-Exponentially growing pop
+# timesNon<-c(seq(0.1,3,0.1))
+# ####### the rate at which the Exponentially expanding pop is expanding
+# alpha=10
+# ############# 1. the time at which the two populations split
+# Ts<-5
+# ############ 2. the time at which the Exp populations start expanding
+# Texp<-3
 
 
-tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)
-plot.phylo(tree)
+# tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)
+# plot.phylo(tree)
 
 
 #treeExp<-makephylo(evoExp)
@@ -287,3 +319,119 @@ plot.phylo(tree)
 
 
 #evolved<-list(lineages=lineages,times=times,height=treeHeight,tips=tips,evo=evo)
+
+MakeTreeBoth<-function(timesExp,timesNon,alpha,Ts,Texp){
+
+######SETTING THE STARTING PARAMETERS
+#lineages is the matrix containing the extant lineages 
+#and the time they appear in the genealogy either by coalescent event or by addition of a lineage
+lineagNon<-matrix(nrow=1,ncol=2,data=0)
+lineagExp<-matrix(nrow=1,ncol=2,data=0)
+
+timesNon<-timesNon-min(timesNon)   #first Leave at 0
+timesExp<-timesExp-min(timesExp)   # first leave at 0
+
+lineagNon[1,]<-c(1,timesNon[1]) #it is initialised with one lineage at time 0
+lineagExp[1,]<-c(1,timesExp[1]) #it is initialised with one lineage at time 0
+
+timesNon<-timesNon[-1]
+#timesExp<-timesExp[-1]
+NlNon<-1 # is the numbe of lineages
+#NlExp<-1
+tipsNon<-1
+#tipsExp<-1
+#total number of lineages in the simulation
+#total<-10
+
+
+heightNon<-0
+height<-0
+evoNon<-c(0,0,0)
+#evoExp<-c(0,0,0)
+
+######preparing evolution
+evolvedNon<-list(lineages=as.matrix(lineagNon),
+		times=timesNon,
+		height=0,
+		tips=tipsNon,
+		evo=evoNon)
+
+#evolvedExpB<-list(lineages=as.matrix(lineagExp),
+		#times=timesExp,
+		#height=0,
+		#tips=tipsExp,
+		#evo=evoExp)
+
+ evolvedA<-list(lineages=as.matrix(lineagExp),
+ 		times=0,
+ 		height=0,
+ 		tips=0,
+ 		evo=0)
+
+######## evolving!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+done<-MakeExpTree(alpha,timesExp,timesNon)
+while(done$height>Ts){
+	done<-MakeExpTree(alphaExp,timesExp)
+}
+
+#treeExp<-makephylo(done$evo)
+# plot.phylo(treeExp)
+
+control=0
+while((evolvedNon$height<Ts)&(control==0)){
+	if((length(evolvedNon$lineages[,1])>1)|(length(evolvedNon$times)>0)){
+	evolvedNon<-evolutionNon(lineagesNon=evolvedNon$lineages,
+				tipsNon=evolvedNon$tips,
+				timesNon=evolvedNon$times,
+				heightNon=evolvedNon$height)
+		if(is.matrix(evolvedNon$evo)){
+			evoNon<-rbind(evoNon,evolvedNon$evo)
+		}
+	}
+	else{control=1}
+}
+
+#treeNon<-makephylo(evoNon)
+
+evolvedA<-joinevolved(done$evolvedExp,evolvedNon,Ts)
+
+evoA<-joinevo(done$evo,evoNon)
+
+
+#while((length(evolved$lineages[,1])+length(evolved$times)>1){	
+  while((length(evolvedA$lineages[,1])>1)|(length(evolvedA$times)>0)){
+		
+	evolvedA<-evolutionNon(lineagesNon=evolvedA$lineages,
+				tipsNon=evolvedA$tips,
+				timesNon=evolvedA$times,
+				heightNon=evolvedA$height)
+	
+	if(is.matrix(evolvedA$evo)){
+		evoA<-rbind(evoA,evolvedA$evo)
+	}
+}
+
+tree<-makephyloAll(evoA)
+#plot.phylo(tree)
+#axisPhylo()
+
+
+return(tree)
+}
+
+
+
+timesExp<-c(rep(0,10))
+####### times at which we sample the leaves in the NON-Exponentially growing pop
+timesNon<-c(rep(0,20))
+####### the rate at which the Exponentially expanding pop is expanding
+alpha=0
+############# 1. the time at which the two populations split
+Ts<-1
+############ 2. the time at which the Exp populations start expanding
+Texp<-1
+
+tree<-MakeTreeBoth(timesExp,timesNon,alpha,Ts,Texp)
+plot.phylo(tree)
+axisPhylo()
+
